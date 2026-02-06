@@ -40,9 +40,11 @@ export default function Login() {
 
       const data = await res.json();
 
-      setMessage(data.message);
+      if (!res.ok) {
+        setMessage(data.message);
 
-      router.replace("/dashboard");
+        router.replace("/dashboard");
+      }
 
       console.log("LOGIN RESPONSE:", data);
     } catch (err) {
