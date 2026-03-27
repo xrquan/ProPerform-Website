@@ -1,242 +1,225 @@
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useTheme } from './ThemeContext';
 
 export default function Home() {
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const isMobile = width < 768;
+  const { theme } = useTheme();
 
   return (
-    <ScrollView style={{ backgroundColor: 'white' }}>
-
-      
-      <View style={styles.vid}>
-        <Image source={require('../assets/images/placeholder.png')} style={styles.vidImg} />
-        <Image source={require('../assets/images/placeholder.png')} style={styles.vidImg} />
-      </View>
-
-      {/* boxen */}
-      <View style={styles.boxRow}>
-
-        {/* blaue Feature Box */}
-        <View style={styles.boxBlue}>
-          <Image
-            source={require('../assets/images/placeholder.png')}
-            style={styles.boxImage}
-          />
-
-          <View style={styles.boxContent}>
-            <Text style={styles.boxTitle}>
-              Werde stärker. Trainiere smarter.
+      <ScrollView style={[styles.mainContainer, { backgroundColor: theme.bg }]} contentContainerStyle={styles.contentContainer}>
+        <View style={[styles.heroSection, { flexDirection: isMobile ? 'column' : 'row' }]}>
+          <View style={[styles.heroText, isMobile && styles.centerContent]}>
+            <View style={[styles.badge, { backgroundColor: theme.badgeBg }]}>
+              <Text style={[styles.badgeText, { color: theme.badgeText }]}>ProPerform App</Text>
+            </View>
+            <Text style={[styles.mainTitle, { color: theme.text }, isMobile && styles.textCenter]}>
+              Werde stärker.{"\n"}Trainiere smarter.
             </Text>
-
-            <Text style={styles.boxText}>
-              Lade dir die App herunter und starte dein Training mit
-              Videos, Übungen und Fortschrittstracking.
+            <Text style={[styles.subText, { color: theme.subText }, isMobile && styles.textCenter]}>
+              Die All-in-One Plattform für Athleten und Trainer. Optimiere dein Training mit maßgeschneiderten Plänen und Live-Tracking.
             </Text>
-
-            <TouchableOpacity
-              style={styles.downloadButton}
-              onPress={() => router.push('/download')}
-            >
-              <Text style={styles.downloadButtonText}>Download</Text>
+            <TouchableOpacity style={styles.primaryButton} onPress={() => router.push('/download' as any)}>
+              <Text style={styles.primaryButtonText}>Jetzt herunterladen</Text>
             </TouchableOpacity>
           </View>
-        </View>
 
-        {/* Graue Feature Box */}
-        <View style={styles.boxGray}>
-          <Text style={styles.featuresTitle}>App</Text>
-
-          <View style={styles.featuresList}>
-            <Text>🏋️ Individuelle Trainingspläne</Text>
-            <Text>🎥 Video-Anleitungen</Text>
-            <Text>📈 Fortschritt verfolgen</Text>
-            <Text>🤝 Trainer-Verbindung</Text>
+          <View style={styles.heroImages}>
+            <Image source={require('../assets/images/phone-pro.png')} style={[styles.heroImgMain, isMobile && styles.mobileImg]} resizeMode="contain" />
           </View>
-
-          <TouchableOpacity onPress={() => router.push('/features')}>
-            <Text style={styles.moreFeatures}>Mehr Features →</Text>
-          </TouchableOpacity>
         </View>
 
-      </View>
+        <View style={[styles.quickFeaturesGrid, { flexDirection: isMobile ? 'column' : 'row' }]}>
+          <FeatureCard title="Individuelle Pläne" icon="🏋️" desc="Passe jedes Workout auf deine Ziele an." isMobile={isMobile} theme={theme} />
+          <FeatureCard title="Live Tracking" icon="📈" desc="Erfasse Sets und Reps in Echtzeit." isMobile={isMobile} theme={theme} />
+          <FeatureCard title="Trainer-Link" icon="🤝" desc="Verbinde dich für direktes Feedback." isMobile={isMobile} theme={theme} />
+        </View>
 
-      {/* komiis */}
-      <View style={styles.testimonialSection}>
-        <Testimonial text="Als Trainer habe ich besseren Überblick über meine Athleten." />
-        <Testimonial text="Als Athlet sehe ich genau meine Schwächen und Fortschritte." reverse />
-        <Testimonial text="Auch ohne Trainer kann ich strukturiert trainieren." />
-      </View>
+        <View style={styles.testimonialSection}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Was unsere Nutzer sagen</Text>
+          <View style={[styles.testimonialGrid, { flexDirection: isMobile ? 'column' : 'row' }]}>
+            <TestimonialCard text="Als Trainer habe ich endlich einen perfekten Überblick über alle meine Athleten." theme={theme} />
+            <TestimonialCard text="Ich sehe genau meine Schwächen und Fortschritte. Das Tracking ist genial einfach." theme={theme} />
+          </View>
+        </View>
 
-      <View style={{ height: 80 }} />
-    </ScrollView>
+        <View style={styles.spacer} />
+      </ScrollView>
   );
 }
 
-function Testimonial({ text, reverse }: any) {
+function FeatureCard({ title, icon, desc, isMobile, theme }: any) {
   return (
-    <View style={[styles.testimonialRow, reverse && styles.reverse]}>
-      <Image
-        source={require('../assets/images/profile.png')}
-        style={styles.testimonialIcon}
-      />
-
-      <View style={styles.testimonialBubble}>
-        <View style={styles.orangeOverlay} />
-        <Text style={styles.testimonialText}>{text}</Text>
+      <View style={[styles.featureCard, { backgroundColor: theme.card, width: isMobile ? '100%' : '31%' }]}>
+        <Text style={styles.featureIcon}>{icon}</Text>
+        <Text style={[styles.featureTitle, { color: theme.text }]}>{title}</Text>
+        <Text style={[styles.featureDesc, { color: theme.subText }]}>{desc}</Text>
       </View>
-    </View>
   );
 }
 
-{/* styles */}
+function TestimonialCard({ text, theme }: any) {
+  return (
+      <View style={[styles.testimonialCard, { backgroundColor: theme.accentBox }]}>
+        <Image source={require('../assets/images/profile.png')} style={styles.testimonialImg} />
+        <Text style={styles.testimonialText}>"{text}"</Text>
+      </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  vid: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 20,
-    padding: 40,
-  },
-  vidImg: {
-    width: 300,
-    height: 180,
-    backgroundColor: '#ccc',
-  },
-
-  
-  boxRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 40,
-    paddingVertical: 60,
-  },
-
-  boxBlue: {
-    backgroundColor: '#1E3A8A',
-    borderRadius: 24,
-    padding: 32,
-    width: 560,
-    height: 300,
-    flexDirection: 'row',
-    gap: 24,
-    alignSelf: 'center',
-  },
-
-  boxGray: {
-    backgroundColor: '#e5e5e5',
-    borderRadius: 24,
-    padding: 32,
-    width: 560,
-    height: 300,
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-
-  boxImage: {
-    width: 140,
-    height: 236,
-    borderRadius: 16,
-  },
-
-  boxContent: {
+  mainContainer: {
     flex: 1,
-    justifyContent: 'center',
   },
-
-  boxTitle: {
-    color: 'white',
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 35,
-  },
-
-  boxText: {
-    color: 'white',
-    fontSize: 15,
-    lineHeight: 20,
-    marginBottom: 35,
-  },
-
-  downloadButton: {
-    backgroundColor: '#F97316',
-    paddingVertical: 10,
-    paddingHorizontal: 26,
-    borderRadius: 20,
-    alignSelf: 'flex-start',
-  
-  },
-
-  downloadButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-  },
-
-  featuresTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
+  contentContainer: {
     alignItems: 'center',
+    paddingHorizontal: 20,
   },
-
-  featuresList: {
-    marginTop: 20,
-    gap: 20,
+  heroSection: {
+    width: '100%',
+    maxWidth: 1100,
+    paddingVertical: 80,
     alignItems: 'center',
-  },
-
-  moreFeatures: {
-    marginTop: 16,
-    color: '#1E3A8A',
-    fontWeight: 'bold',
-    
-  },
-
-  
-  testimonialSection: {
-    backgroundColor: '#eee',
-    paddingVertical: 40,
-    gap: 24,
-  },
-
-  testimonialRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     gap: 40,
   },
-
-  reverse: {
-    flexDirection: 'row-reverse',
+  heroText: {
+    flex: 1,
+    alignItems: 'flex-start',
   },
-
-  testimonialIcon: {
+  centerContent: {
+    alignItems: 'center',
+    textAlign: 'center',
+  },
+  badge: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginBottom: 20,
+  },
+  badgeText: {
+    fontWeight: "bold",
+  },
+  mainTitle: {
+    fontSize: 48,
+    fontWeight: 'bold',
+    lineHeight: 56,
+    marginBottom: 20,
+  },
+  textCenter: {
+    textAlign: 'center',
+  },
+  subText: {
+    fontSize: 18,
+    lineHeight: 28,
+    marginBottom: 32,
+    maxWidth: 500,
+  },
+  primaryButton: {
+    backgroundColor: '#F97316',
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 30,
+    shadowColor: "#F97316",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  primaryButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  heroImages: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  heroImgMain: {
+    width: 300,
+    height: 500,
+    borderRadius: 30,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+  },
+  mobileImg: {
+    width: 250,
+    height: 450,
+  },
+  quickFeaturesGrid: {
+    width: '100%',
+    maxWidth: 1100,
+    justifyContent: 'space-between',
+    gap: 20,
+    marginBottom: 80,
+  },
+  featureCard: {
+    padding: 30,
+    borderRadius: 24,
+    alignItems: 'center',
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  featureIcon: {
+    fontSize: 40,
+    marginBottom: 16,
+  },
+  featureTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  featureDesc: {
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  testimonialSection: {
+    width: '100%',
+    maxWidth: 1100,
+    alignItems: 'center',
+    marginBottom: 60,
+  },
+  sectionTitle: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    marginBottom: 40,
+    textAlign: 'center',
+  },
+  testimonialGrid: {
+    width: '100%',
+    gap: 20,
+    justifyContent: 'center',
+  },
+  testimonialCard: {
+    flex: 1,
+    padding: 30,
+    borderRadius: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 20,
+  },
+  testimonialImg: {
     width: 60,
     height: 60,
-    borderRadius: 22,
+    borderRadius: 30,
   },
-
-  testimonialBubble: {
-    backgroundColor: '#1E3A8A',
-    paddingVertical: 14,
-    paddingHorizontal: 22,
-    borderRadius: 18,
-    width: 520,
-    position: 'relative',
-  },
-
-  orangeOverlay: {
-    position: 'absolute',
-    top: '50%',
-    left: '30%',
-    transform: [{ translateX: -70 }, { translateY: -8 }],
-    width: 300,
-    height: 16,
-    backgroundColor: 'rgba(249,115,22,0.45)',
-    borderRadius: 8,
-  },
-
   testimonialText: {
+    flex: 1,
     color: 'white',
-    fontSize: 15,
-    lineHeight: 20,
+    fontSize: 16,
+    fontStyle: 'italic',
+    lineHeight: 24,
+  },
+  spacer: {
+    height: 80,
   },
 });

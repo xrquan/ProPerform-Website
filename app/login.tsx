@@ -1,118 +1,146 @@
-import { router } from "expo-router";
 import { useState } from "react";
+import { useRouter } from "expo-router";
 import {
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+  View, Text, TextInput, TouchableOpacity, StyleSheet,
+  ActivityIndicator, useWindowDimensions
 } from "react-native";
+import { useTheme } from "./ThemeContext";
+
+const API_BASE_URL = "https://api.properform.app";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  const [message, setMessage] = useState("");
-  //const [stayLoggedIn, setStayLoggedIn] = useState(true);
-
-  /**
-   * stay logged in gibts grad nicht im backend
-   *
-   * wenn es das dann mal gibt werde ich es einfügen
-   */
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const { width } = useWindowDimensions();
+  const { theme } = useTheme();
 
   const handleLogin = async () => {
+    if (!email || !password) return alert("Bitte alles ausfüllen!");
+
+    setLoading(true);
     try {
-      const res = await fetch(
-        "https://api.properform.app/auth/trainers/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email,
-            password,
-            //stayLoggedIn,
-          }),
-        },
-      );
+      const response = await fetch(`${API_BASE_URL}/auth/trainers/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-      const data = await res.json();
+      const data = await response.json();
 
-      if (!res.ok) {
-        setMessage(data.message);
+      if (response.ok && data.token) {
+        localStorage.setItem("trainerToken", data.token);
+        localStorage.setItem("trainerId", data.tid.toString());
 
-        router.replace("/dashboard");
+        setTimeout(() => {
+          router.replace("/dashboard" as any);
+        }, 10);
+      } else {
+        alert(data.message || "Login fehlgeschlagen");
       }
-
-      console.log("LOGIN RESPONSE:", data);
-    } catch (err) {
-      console.log("LOGIN ERROR:", err);
+    } catch (error) {
+      alert("Verbindung zum Server nicht möglich.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <>
-      <View style={styles.container}>
-        <Text style={styles.title}>Login</Text>
+      <View style={[styles.mainContainer, { backgroundColor: theme.bg }]}>
+        <View style={[styles.loginCard, { backgroundColor: theme.card, width: width > 500 ? 450 : '90%' }]}>
+          <View style={[styles.badge, { backgroundColor: theme.badgeBg }]}>
+            <Text style={[styles.badgeText, { color: theme.badgeText }]}>ProPerform Admin</Text>
+          </View>
 
-        <TextInput
-          placeholder="E-Mail"
-          value={email}
-          onChangeText={setEmail}
-          style={styles.input}
-          autoCapitalize="none"
-        />
+          <Text style={[styles.title, { color: theme.text }]}>Willkommen zurück</Text>
+          <Text style={[styles.subText, { color: theme.subText }]}>Logge dich ein, um deine Athleten zu verwalten.</Text>
 
-        <TextInput
-          placeholder="Passwort"
-          value={password}
-          onChangeText={setPassword}
-          style={styles.input}
-          secureTextEntry
-        />
+          <TextInput
+              style={[styles.input, { backgroundColor: theme.inputBg, color: theme.text }]}
+              placeholder="E-Mail Adresse"
+              placeholderTextColor={theme.subText}
+              value={email}
+              onChangeText={setEmail}
+          />
 
-        {message ? <Text>{message}</Text> : null}
+          <TextInput
+              style={[styles.input, { backgroundColor: theme.inputBg, color: theme.text }]}
+              placeholder="Passwort"
+              placeholderTextColor={theme.subText}
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+          />
 
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Login</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+              style={styles.primaryButton}
+              onPress={handleLogin}
+              disabled={loading}
+          >
+            {loading ? (
+                <ActivityIndicator color="white" />
+            ) : (
+                <Text style={styles.buttonText}>Anmelden</Text>
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
-    </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 24,
-    backgroundColor: "white",
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: "bold",
-    marginBottom: 24,
-  },
-  input: {
-    width: 320,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 14,
-  },
-  button: {
-    backgroundColor: "#F97316",
-    paddingVertical: 12,
-    paddingHorizontal: 40,
+  badge: {
     borderRadius: 20,
-    marginTop: 10,
+    marginBottom: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  badgeText: {
+    fontWeight: "bold",
   },
   buttonText: {
-    color: "white",
-    fontWeight: "bold",
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  input: {
+    borderRadius: 15,
+    marginBottom: 15,
+    padding: 16,
+    width: '100%',
+  },
+  loginCard: {
+    alignItems: 'center',
+    borderRadius: 30,
+    elevation: 5,
+    padding: 40,
+    shadowColor: "#1E3A8A",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+  },
+  mainContainer: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+  },
+  primaryButton: {
+    alignItems: 'center',
+    backgroundColor: '#F97316',
+    borderRadius: 15,
+    marginTop: 10,
+    paddingVertical: 16,
+    width: '100%',
+  },
+  subText: {
+    fontSize: 16,
+    marginBottom: 30,
+    textAlign: 'center',
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    marginBottom: 10,
   },
 });
